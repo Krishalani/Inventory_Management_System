@@ -84,6 +84,7 @@ namespace InventoryManagementSystem
             this.label3.Size = new System.Drawing.Size(324, 23);
             this.label3.TabIndex = 8;
             this.label3.Text = "INVENTORY MANAGEMENT SYSTEM";
+           // this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // pictureBox2
             // 

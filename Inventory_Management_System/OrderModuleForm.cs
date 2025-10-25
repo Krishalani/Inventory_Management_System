@@ -1,94 +1,151 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace InventoryManagementSystem
 {
     public partial class OrderModuleForm : Form
     {
-        SqlConnection con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\acer\Documents\dbIMS.mdf;Integrated Security=True;Connect Timeout=30");
+        SqlConnection con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;Initial Catalog=StockSpot;Integrated Security=True;Connect Timeout=30");
         SqlCommand cm = new SqlCommand();
         SqlDataReader dr;
-        int qty = 0;
+        int availableQty = 0;
+
         public OrderModuleForm()
         {
             InitializeComponent();
+            CreateTablesIfNotExists();
             LoadCustomer();
             LoadProduct();
         }
 
-        private void pictureBoxClose_Click(object sender, EventArgs e)
+        // ------------------ AUTO CREATE TABLES ------------------
+        private void CreateTablesIfNotExists()
         {
-            this.Dispose();
-           
+            try
+            {
+                con.Open();
+
+                string createCustomer = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='tbCustomer' AND xtype='U')
+                CREATE TABLE tbCustomer(
+                    cid INT IDENTITY(1,1) PRIMARY KEY,
+                    cname NVARCHAR(100),
+                    cphone NVARCHAR(20)
+                )";
+                new SqlCommand(createCustomer, con).ExecuteNonQuery();
+
+                string createProduct = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='tbProduct' AND xtype='U')
+                CREATE TABLE tbProduct(
+                    pid INT IDENTITY(1,1) PRIMARY KEY,
+                    pname NVARCHAR(100),
+                    pqty INT,
+                    pprice FLOAT,
+                    pdescription NVARCHAR(255),
+                    pcategory NVARCHAR(100)
+                )";
+                new SqlCommand(createProduct, con).ExecuteNonQuery();
+
+                string createOrder = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='tbOrder' AND xtype='U')
+                CREATE TABLE tbOrder(
+                    orderid INT IDENTITY(1,1) PRIMARY KEY,
+                    odate DATE,
+                    pid INT FOREIGN KEY REFERENCES tbProduct(pid),
+                    cid INT FOREIGN KEY REFERENCES tbCustomer(cid),
+                    qty INT,
+                    price FLOAT,
+                    total FLOAT
+                )";
+                new SqlCommand(createOrder, con).ExecuteNonQuery();
+
+                con.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Auto table creation failed: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (con.State == ConnectionState.Open) con.Close();
+            }
         }
 
+        // ------------------ LOAD DATA ------------------
         public void LoadCustomer()
         {
-            int i = 0;
-            dgvCustomer.Rows.Clear();
-            cm = new SqlCommand("SELECT cid, cname FROM tbCustomer WHERE CONCAT(cid,cname) LIKE '%"+txtSearchCust.Text+"%'", con);
-            con.Open();
-            dr = cm.ExecuteReader();
-            while (dr.Read())
+            try
             {
-                i++;
-                dgvCustomer.Rows.Add(i, dr[0].ToString(), dr[1].ToString());
+                dgvCustomer.Rows.Clear();
+                cm = new SqlCommand("SELECT cid, cname FROM tbCustomer WHERE CONCAT(cid,cname) LIKE @search", con);
+                cm.Parameters.AddWithValue("@search", "%" + txtSearchCust.Text + "%");
+                con.Open();
+                dr = cm.ExecuteReader();
+                int i = 0;
+                while (dr.Read())
+                {
+                    i++;
+                    dgvCustomer.Rows.Add(i, dr["cid"].ToString(), dr["cname"].ToString());
+                }
+                dr.Close();
+                con.Close();
             }
-            dr.Close();
-            con.Close();
+            catch { if (con.State == ConnectionState.Open) con.Close(); }
         }
 
         public void LoadProduct()
         {
-            int i = 0;
-            dgvProduct.Rows.Clear();
-            cm = new SqlCommand("SELECT * FROM tbProduct WHERE CONCAT(pid, pname, pprice, pdescription, pcategory) LIKE '%" + txtSearchProd.Text + "%'", con);
+            try
+            {
+                dgvProduct.Rows.Clear();
+                cm = new SqlCommand("SELECT * FROM tbProduct WHERE CONCAT(pid, pname, pprice, pdescription, pcategory) LIKE @search", con);
+                cm.Parameters.AddWithValue("@search", "%" + txtSearchProd.Text + "%");
+                con.Open();
+                dr = cm.ExecuteReader();
+                int i = 0;
+                while (dr.Read())
+                {
+                    i++;
+                    dgvProduct.Rows.Add(i, dr["pid"].ToString(), dr["pname"].ToString(), dr["pqty"].ToString(), dr["pprice"].ToString(), dr["pdescription"].ToString(), dr["pcategory"].ToString());
+                }
+                dr.Close();
+                con.Close();
+            }
+            catch { if (con.State == ConnectionState.Open) con.Close(); }
+        }
+
+        private void txtSearchCust_TextChanged(object sender, EventArgs e) => LoadCustomer();
+        private void txtSearchProd_TextChanged(object sender, EventArgs e) => LoadProduct();
+
+        // ------------------ QUANTITY CHECK ------------------
+        public void GetAvailableQty()
+        {
+            if (string.IsNullOrEmpty(txtPid.Text)) { availableQty = 0; return; }
+            cm = new SqlCommand("SELECT pqty FROM tbProduct WHERE pid=@pid", con);
+            cm.Parameters.AddWithValue("@pid", txtPid.Text);
             con.Open();
             dr = cm.ExecuteReader();
-            while (dr.Read())
-            {
-                i++;
-                dgvProduct.Rows.Add(i, dr[0].ToString(), dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(), dr[5].ToString());
-            }
+            if (dr.Read()) availableQty = Convert.ToInt32(dr["pqty"]);
             dr.Close();
             con.Close();
         }
 
-        private void txtSearchCust_TextChanged(object sender, EventArgs e)
-        {
-            LoadCustomer();
-        }
-
-        private void txtSearchProd_TextChanged(object sender, EventArgs e)
-        {
-            LoadProduct();
-        }
-
-        
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            GetQty();
-            if (Convert.ToInt16(UDQty.Value) > qty)
+            GetAvailableQty();
+            if (UDQty.Value > availableQty)
             {
                 MessageBox.Show("Instock quantity is not enough!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                UDQty.Value = UDQty.Value - 1;
+                UDQty.Value = availableQty;
                 return;
             }
-            if (Convert.ToInt16(UDQty.Value) > 0)
+
+            if (int.TryParse(txtPrice.Text, out int price))
             {
-                int total = Convert.ToInt16(txtPrice.Text) * Convert.ToInt16(UDQty.Value);
-                txtTotal.Text = total.ToString();
+                txtTotal.Text = (price * UDQty.Value).ToString();
             }
         }
 
+        // ------------------ GRID CLICK ------------------
         private void dgvCustomer_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             txtCId.Text = dgvCustomer.Rows[e.RowIndex].Cells[1].Value.ToString();
@@ -99,91 +156,81 @@ namespace InventoryManagementSystem
         {
             txtPid.Text = dgvProduct.Rows[e.RowIndex].Cells[1].Value.ToString();
             txtPName.Text = dgvProduct.Rows[e.RowIndex].Cells[2].Value.ToString();
-            txtPrice.Text = dgvProduct.Rows[e.RowIndex].Cells[4].Value.ToString();            
+            txtPrice.Text = dgvProduct.Rows[e.RowIndex].Cells[4].Value.ToString();
+            GetAvailableQty();
         }
 
-      
-
+        // ------------------ INSERT ORDER ------------------
         private void btnInsert_Click(object sender, EventArgs e)
         {
-            try
+            if (string.IsNullOrEmpty(txtCId.Text) || string.IsNullOrEmpty(txtPid.Text) || UDQty.Value <= 0)
             {
-                if (txtCId.Text == "")
-                {
-                    MessageBox.Show("Please select customer!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                if (txtPid.Text == "")
-                {
-                    MessageBox.Show("Please select product!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                if (MessageBox.Show("Are you sure you want to insert this order?", "Saving Record", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                {
+                MessageBox.Show("Please select customer, product, and quantity!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                    cm = new SqlCommand("INSERT INTO tbOrder(odate, pid, cid, qty, price, total)VALUES(@odate, @pid, @cid, @qty, @price, @total)", con);
+            if (!int.TryParse(txtPrice.Text, out int price) || !int.TryParse(txtTotal.Text, out int total))
+            {
+                MessageBox.Show("Price or Total is invalid!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (MessageBox.Show("Are you sure you want to insert this order?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                SqlTransaction transaction = null;
+                try
+                {
+                    con.Open();
+                    transaction = con.BeginTransaction();
+
+                    // Insert order
+                    cm = new SqlCommand("INSERT INTO tbOrder(odate, pid, cid, qty, price, total) VALUES(@odate, @pid, @cid, @qty, @price, @total)", con, transaction);
                     cm.Parameters.AddWithValue("@odate", dtOrder.Value);
                     cm.Parameters.AddWithValue("@pid", Convert.ToInt32(txtPid.Text));
                     cm.Parameters.AddWithValue("@cid", Convert.ToInt32(txtCId.Text));
                     cm.Parameters.AddWithValue("@qty", Convert.ToInt32(UDQty.Value));
-                    cm.Parameters.AddWithValue("@price", Convert.ToInt32(txtPrice.Text));
-                    cm.Parameters.AddWithValue("@total", Convert.ToInt32(txtTotal.Text));
-                    con.Open();
+                    cm.Parameters.AddWithValue("@price", price);
+                    cm.Parameters.AddWithValue("@total", total);
                     cm.ExecuteNonQuery();
-                    con.Close();
-                    MessageBox.Show("Order has been successfully inserted.");
-                    
 
-                    cm = new SqlCommand("UPDATE tbProduct SET pqty=(pqty-@pqty) WHERE pid LIKE '"+ txtPid.Text +"' ", con);                    
-                    cm.Parameters.AddWithValue("@pqty", Convert.ToInt16(UDQty.Value));
-                   
-                    con.Open();
+                    // Update stock
+                    cm = new SqlCommand("UPDATE tbProduct SET pqty = pqty - @qty WHERE pid=@pid", con, transaction);
+                    cm.Parameters.AddWithValue("@qty", Convert.ToInt32(UDQty.Value));
+                    cm.Parameters.AddWithValue("@pid", Convert.ToInt32(txtPid.Text));
                     cm.ExecuteNonQuery();
-                    con.Close();
+
+                    transaction.Commit();
+                    MessageBox.Show("Order has been successfully inserted.");
+
                     Clear();
                     LoadProduct();
-
                 }
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
+                catch (Exception ex)
+                {
+                    transaction?.Rollback();
+                    MessageBox.Show("Order insertion failed: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    con.Close();
+                }
             }
         }
 
+        // ------------------ CLEAR ------------------
         public void Clear()
         {
             txtCId.Clear();
             txtCName.Clear();
-
             txtPid.Clear();
             txtPName.Clear();
-
             txtPrice.Clear();
             UDQty.Value = 0;
             txtTotal.Clear();
             dtOrder.Value = DateTime.Now;
         }
 
-        private void btnClear_Click(object sender, EventArgs e)
-        {
-            Clear();                        
-        }
-
-        public void GetQty()
-        {
-            cm = new SqlCommand("SELECT pqty FROM tbProduct WHERE pid='"+ txtPid.Text +"'", con);
-            con.Open();
-            dr = cm.ExecuteReader();
-            while (dr.Read())
-            {
-                qty = Convert.ToInt32(dr[0].ToString());
-            }
-            dr.Close();
-            con.Close();
-        }
-
-     
+        private void btnClear_Click(object sender, EventArgs e) => Clear();
+        private void pictureBoxClose_Click(object sender, EventArgs e) => this.Dispose();
     }
 }
