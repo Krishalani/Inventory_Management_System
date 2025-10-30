@@ -7,7 +7,8 @@ namespace InventoryManagementSystem
 {
     public partial class OrderModuleForm : Form
     {
-        SqlConnection con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;Initial Catalog=StockSpot;Integrated Security=True;Connect Timeout=30");
+        SqlConnection con = new SqlConnection(
+            @"Data Source=(LocalDB)\MSSQLLocalDB;Initial Catalog=StockSpot;Integrated Security=True;Connect Timeout=30");
         SqlCommand cm = new SqlCommand();
         SqlDataReader dr;
         int availableQty = 0;
@@ -18,6 +19,9 @@ namespace InventoryManagementSystem
             CreateTablesIfNotExists();
             LoadCustomer();
             LoadProduct();
+
+            // Ensure UDQty hooks into the correct event
+            this.UDQty.ValueChanged += new EventHandler(this.UDQty_ValueChanged);
         }
 
         // ------------------ AUTO CREATE TABLES ------------------
@@ -70,13 +74,13 @@ namespace InventoryManagementSystem
             }
         }
 
-        // ------------------ LOAD DATA ------------------
+        // ------------------ LOAD CUSTOMER ------------------
         public void LoadCustomer()
         {
             try
             {
                 dgvCustomer.Rows.Clear();
-                cm = new SqlCommand("SELECT cid, cname FROM tbCustomer WHERE CONCAT(cid,cname) LIKE @search", con);
+                cm = new SqlCommand("SELECT cid, cname FROM tbCustomer WHERE CONCAT(cid, cname) LIKE @search", con);
                 cm.Parameters.AddWithValue("@search", "%" + txtSearchCust.Text + "%");
                 con.Open();
                 dr = cm.ExecuteReader();
@@ -89,9 +93,13 @@ namespace InventoryManagementSystem
                 dr.Close();
                 con.Close();
             }
-            catch { if (con.State == ConnectionState.Open) con.Close(); }
+            catch
+            {
+                if (con.State == ConnectionState.Open) con.Close();
+            }
         }
 
+        // ------------------ LOAD PRODUCT ------------------
         public void LoadProduct()
         {
             try
@@ -105,18 +113,27 @@ namespace InventoryManagementSystem
                 while (dr.Read())
                 {
                     i++;
-                    dgvProduct.Rows.Add(i, dr["pid"].ToString(), dr["pname"].ToString(), dr["pqty"].ToString(), dr["pprice"].ToString(), dr["pdescription"].ToString(), dr["pcategory"].ToString());
+                    dgvProduct.Rows.Add(i,
+                        dr["pid"].ToString(),
+                        dr["pname"].ToString(),
+                        dr["pqty"].ToString(),
+                        dr["pprice"].ToString(),
+                        dr["pdescription"].ToString(),
+                        dr["pcategory"].ToString());
                 }
                 dr.Close();
                 con.Close();
             }
-            catch { if (con.State == ConnectionState.Open) con.Close(); }
+            catch
+            {
+                if (con.State == ConnectionState.Open) con.Close();
+            }
         }
 
         private void txtSearchCust_TextChanged(object sender, EventArgs e) => LoadCustomer();
         private void txtSearchProd_TextChanged(object sender, EventArgs e) => LoadProduct();
 
-        // ------------------ QUANTITY CHECK ------------------
+        // ------------------ GET AVAILABLE QUANTITY ------------------
         public void GetAvailableQty()
         {
             if (string.IsNullOrEmpty(txtPid.Text)) { availableQty = 0; return; }
@@ -129,35 +146,59 @@ namespace InventoryManagementSystem
             con.Close();
         }
 
-        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        // ------------------ CALCULATE TOTAL ------------------
+        private void UDQty_ValueChanged(object sender, EventArgs e)
         {
-            GetAvailableQty();
-            if (UDQty.Value > availableQty)
+            try
             {
-                MessageBox.Show("Instock quantity is not enough!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                UDQty.Value = availableQty;
-                return;
-            }
+                GetAvailableQty();
 
-            if (int.TryParse(txtPrice.Text, out int price))
+                if (UDQty.Value > availableQty)
+                {
+                    MessageBox.Show("Instock quantity is not enough!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    UDQty.Value = availableQty;
+                    return;
+                }
+
+                if (double.TryParse(txtPrice.Text, out double price))
+                {
+                    double total = price * Convert.ToDouble(UDQty.Value);
+                    txtTotal.Text = total.ToString("0.00");
+                }
+                else
+                {
+                    txtTotal.Text = "0.00";
+                }
+            }
+            catch (Exception ex)
             {
-                txtTotal.Text = (price * UDQty.Value).ToString();
+                MessageBox.Show("Error calculating total: " + ex.Message);
             }
         }
 
-        // ------------------ GRID CLICK ------------------
+        // ------------------ SELECT CUSTOMER ------------------
         private void dgvCustomer_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            txtCId.Text = dgvCustomer.Rows[e.RowIndex].Cells[1].Value.ToString();
-            txtCName.Text = dgvCustomer.Rows[e.RowIndex].Cells[2].Value.ToString();
+            if (e.RowIndex >= 0)
+            {
+                txtCId.Text = dgvCustomer.Rows[e.RowIndex].Cells[1].Value.ToString();
+                txtCName.Text = dgvCustomer.Rows[e.RowIndex].Cells[2].Value.ToString();
+            }
         }
 
+        // ------------------ SELECT PRODUCT ------------------
         private void dgvProduct_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            txtPid.Text = dgvProduct.Rows[e.RowIndex].Cells[1].Value.ToString();
-            txtPName.Text = dgvProduct.Rows[e.RowIndex].Cells[2].Value.ToString();
-            txtPrice.Text = dgvProduct.Rows[e.RowIndex].Cells[4].Value.ToString();
-            GetAvailableQty();
+            if (e.RowIndex >= 0)
+            {
+                txtPid.Text = dgvProduct.Rows[e.RowIndex].Cells[1].Value.ToString();
+                txtPName.Text = dgvProduct.Rows[e.RowIndex].Cells[2].Value.ToString();
+                txtPrice.Text = dgvProduct.Rows[e.RowIndex].Cells[4].Value.ToString();
+                GetAvailableQty();
+
+                // auto calculate total
+                UDQty_ValueChanged(null, null);
+            }
         }
 
         // ------------------ INSERT ORDER ------------------
@@ -169,7 +210,7 @@ namespace InventoryManagementSystem
                 return;
             }
 
-            if (!int.TryParse(txtPrice.Text, out int price) || !int.TryParse(txtTotal.Text, out int total))
+            if (!double.TryParse(txtPrice.Text, out double price) || !double.TryParse(txtTotal.Text, out double total))
             {
                 MessageBox.Show("Price or Total is invalid!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -183,7 +224,6 @@ namespace InventoryManagementSystem
                     con.Open();
                     transaction = con.BeginTransaction();
 
-                    // Insert order
                     cm = new SqlCommand("INSERT INTO tbOrder(odate, pid, cid, qty, price, total) VALUES(@odate, @pid, @cid, @qty, @price, @total)", con, transaction);
                     cm.Parameters.AddWithValue("@odate", dtOrder.Value);
                     cm.Parameters.AddWithValue("@pid", Convert.ToInt32(txtPid.Text));
@@ -193,14 +233,13 @@ namespace InventoryManagementSystem
                     cm.Parameters.AddWithValue("@total", total);
                     cm.ExecuteNonQuery();
 
-                    // Update stock
                     cm = new SqlCommand("UPDATE tbProduct SET pqty = pqty - @qty WHERE pid=@pid", con, transaction);
                     cm.Parameters.AddWithValue("@qty", Convert.ToInt32(UDQty.Value));
                     cm.Parameters.AddWithValue("@pid", Convert.ToInt32(txtPid.Text));
                     cm.ExecuteNonQuery();
 
                     transaction.Commit();
-                    MessageBox.Show("Order has been successfully inserted.");
+                    MessageBox.Show("Order has been successfully inserted!");
 
                     Clear();
                     LoadProduct();

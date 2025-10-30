@@ -298,7 +298,7 @@ namespace InventoryManagementSystem
             this.UDQty.Name = "UDQty";
             this.UDQty.Size = new System.Drawing.Size(137, 26);
             this.UDQty.TabIndex = 30;
-            this.UDQty.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+          //  this.UDQty.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
             // btnClear
             // 

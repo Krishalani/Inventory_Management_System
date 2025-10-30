@@ -55,6 +55,7 @@ namespace InventoryManagementSystem
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(825, 49);
             this.panel1.TabIndex = 27;
+    
             // 
             // pictureBoxClose
             // 

@@ -60,7 +60,7 @@ namespace InventoryManagementSystem
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Margin = new System.Windows.Forms.Padding(4);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(602, 49);
+            this.panel1.Size = new System.Drawing.Size(673, 49);
             this.panel1.TabIndex = 14;
             // 
             // pictureBoxClose
@@ -224,7 +224,7 @@ namespace InventoryManagementSystem
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(602, 350);
+            this.ClientSize = new System.Drawing.Size(673, 439);
             this.Controls.Add(this.lblPid);
             this.Controls.Add(this.comboCat);
             this.Controls.Add(this.panel1);
