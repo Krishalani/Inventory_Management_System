@@ -83,5 +83,7 @@ namespace InventoryManagementSystem
                 MessageBox.Show(ex.Message);
             }
         }
+
+    
     }
 }
