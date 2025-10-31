@@ -1,4 +1,6 @@
 ﻿
+using System.Drawing;
+
 namespace InventoryManagementSystem
 {
     partial class MainForm
@@ -195,7 +197,7 @@ namespace InventoryManagementSystem
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Century Gothic", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.label3.ForeColor = Color.FromArgb(0, 71, 160);
             this.label3.Location = new System.Drawing.Point(4, 57);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
