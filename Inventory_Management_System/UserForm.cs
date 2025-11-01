@@ -14,68 +14,112 @@ namespace InventoryManagementSystem
         public UserForm()
         {
             InitializeComponent();
+            SetupDataGridViewColumns();
             LoadUser();
         }
 
         public void LoadUser()
         {
-            int i = 0;
-            dgvUser.Rows.Clear();
-            cm = new SqlCommand("SELECT * FROM tbUser", con);
-            con.Open();
-            dr = cm.ExecuteReader();
-            while (dr.Read())
+            try
             {
-                i++;
-                // Columns: id, fullname, username, password
-                dgvUser.Rows.Add(i, dr["id"].ToString(), dr["fullname"].ToString(), dr["username"].ToString(), dr["password"].ToString());
-            }
-            dr.Close();
-            con.Close();
-        }
+                int i = 0;
+                dgvUser.Rows.Clear();
+                cm = new SqlCommand("SELECT * FROM tbUser", con);
+                con.Open();
+                dr = cm.ExecuteReader();
 
+                while (dr.Read())
+                {
+                    i++;
+                    // Add only the data columns (No, User Name, Full Name, Password, Phone)
+                    // The button columns will automatically show "Edit"/"Delete" text
+                    dgvUser.Rows.Add(
+                        i,
+                        dr["username"].ToString(),
+                        dr["fullname"].ToString(),
+                        dr["password"].ToString(),
+                        dr["phone"].ToString()
+                    );
+                }
+                dr.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading users: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                con.Close();
+            }
+        }
         private void btnAdd_Click(object sender, EventArgs e)
         {
             UserModuleForm userModule = new UserModuleForm();
             userModule.btnSave.Enabled = true;
             userModule.btnUpdate.Enabled = false;
+            userModule.txtUserName.Enabled = true; // Ensure username is enabled for new users
             userModule.ShowDialog();
             LoadUser();
         }
-
         private void dgvUser_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
+            // Ensure we're clicking on a valid row and on button columns
+            if (e.RowIndex < 0 || e.RowIndex >= dgvUser.Rows.Count) return;
+
             string colName = dgvUser.Columns[e.ColumnIndex].Name;
+
             if (colName == "Edit")
             {
+                // Get the data from the row
+                DataGridViewRow row = dgvUser.Rows[e.RowIndex];
+
                 UserModuleForm userModule = new UserModuleForm();
-                userModule.txtUserName.Text = dgvUser.Rows[e.RowIndex].Cells[2].Value.ToString();
-                userModule.txtFullName.Text = dgvUser.Rows[e.RowIndex].Cells[1].Value.ToString();
-                userModule.txtPass.Text = dgvUser.Rows[e.RowIndex].Cells[4].Value.ToString();
-                userModule.txtRepass.Text = dgvUser.Rows[e.RowIndex].Cells[4].Value.ToString(); // repeat password field
+                userModule.txtUserName.Text = row.Cells["colUserName"].Value.ToString();
+                userModule.txtFullName.Text = row.Cells["colFullName"].Value.ToString();
+                userModule.txtPass.Text = row.Cells["colPassword"].Value.ToString();
+                userModule.txtRepass.Text = row.Cells["colPassword"].Value.ToString();
+                userModule.txtPhone.Text = row.Cells["colPhone"].Value?.ToString() ?? "";
 
                 userModule.btnSave.Enabled = false;
                 userModule.btnUpdate.Enabled = true;
-                userModule.txtUserName.Enabled = false;
+                userModule.txtUserName.Enabled = false; // Disable username editing
                 userModule.ShowDialog();
+
+                LoadUser(); // Refresh the list
             }
             else if (colName == "Delete")
             {
-                if (MessageBox.Show("Are you sure you want to delete this user?", "Delete Record", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                DataGridViewRow row = dgvUser.Rows[e.RowIndex];
+                string username = row.Cells["colUserName"].Value.ToString();
+                string fullname = row.Cells["colFullName"].Value.ToString();
+
+                if (MessageBox.Show($"Are you sure you want to delete user '{fullname}' ({username})?",
+                    "Delete Record", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    con.Open();
-                    cm = new SqlCommand("DELETE FROM tbUser WHERE username=@username", con);
-                    cm.Parameters.AddWithValue("@username", dgvUser.Rows[e.RowIndex].Cells[2].Value.ToString());
-                    cm.ExecuteNonQuery();
-                    con.Close();
-                    MessageBox.Show("Record has been successfully deleted!");
+                    try
+                    {
+                        con.Open();
+                        cm = new SqlCommand("DELETE FROM tbUser WHERE username=@username", con);
+                        cm.Parameters.AddWithValue("@username", username);
+                        cm.ExecuteNonQuery();
+                        con.Close();
+                        MessageBox.Show("User has been successfully deleted!");
+
+                        LoadUser(); // Refresh the list
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error deleting user: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        con.Close();
+                    }
                 }
             }
-            LoadUser();
         }
-
-     
-    
+        private void dgvUser_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            // Suppress data error messages
+            e.ThrowException = false;
+        }
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {

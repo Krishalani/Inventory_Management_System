@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
@@ -33,12 +32,20 @@ namespace InventoryManagementSystem
                     return;
                 }
 
+                // Validate required fields
+                if (string.IsNullOrEmpty(txtUserName.Text) || string.IsNullOrEmpty(txtFullName.Text) || string.IsNullOrEmpty(txtPass.Text))
+                {
+                    MessageBox.Show("Please fill in all required fields!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 if (MessageBox.Show("Are you sure you want to save this user?", "Saving Record", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    cm = new SqlCommand("INSERT INTO tbUser(username, fullname, password) VALUES(@username, @fullname, @password)", con);
+                    cm = new SqlCommand("INSERT INTO tbUser(username, fullname, password, phone) VALUES(@username, @fullname, @password, @phone)", con);
                     cm.Parameters.AddWithValue("@username", txtUserName.Text);
                     cm.Parameters.AddWithValue("@fullname", txtFullName.Text);
                     cm.Parameters.AddWithValue("@password", txtPass.Text);
+                    cm.Parameters.AddWithValue("@phone", txtPhone.Text); // Added phone parameter
 
                     con.Open();
                     cm.ExecuteNonQuery();
@@ -66,9 +73,10 @@ namespace InventoryManagementSystem
 
                 if (MessageBox.Show("Are you sure you want to update this user?", "Update Record", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    cm = new SqlCommand("UPDATE tbUser SET fullname=@fullname, password=@password WHERE username=@username", con);
+                    cm = new SqlCommand("UPDATE tbUser SET fullname=@fullname, password=@password, phone=@phone WHERE username=@username", con);
                     cm.Parameters.AddWithValue("@fullname", txtFullName.Text);
                     cm.Parameters.AddWithValue("@password", txtPass.Text);
+                    cm.Parameters.AddWithValue("@phone", txtPhone.Text); // Added phone parameter
                     cm.Parameters.AddWithValue("@username", txtUserName.Text);
 
                     con.Open();
@@ -90,6 +98,7 @@ namespace InventoryManagementSystem
             Clear();
             btnSave.Enabled = true;
             btnUpdate.Enabled = false;
+            txtUserName.Enabled = true; // Enable username field for new entries
             txtUserName.Focus();
         }
 
@@ -100,6 +109,22 @@ namespace InventoryManagementSystem
             txtFullName.Clear();
             txtPass.Clear();
             txtRepass.Clear();
+            txtPhone.Clear(); // Clear phone field
+        }
+
+        // Method to load user data for editing (call this when you want to update a user)
+        public void LoadUserData(string username, string fullname, string password, string phone)
+        {
+            txtUserName.Text = username;
+            txtFullName.Text = fullname;
+            txtPass.Text = password;
+            txtRepass.Text = password;
+            txtPhone.Text = phone;
+
+            // Disable username field during update (username is the key)
+            txtUserName.Enabled = false;
+            btnSave.Enabled = false;
+            btnUpdate.Enabled = true;
         }
     }
 }
