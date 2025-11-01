@@ -37,7 +37,6 @@ namespace InventoryManagementSystem
             this.panel1 = new System.Windows.Forms.Panel();
             this.label3 = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.label1 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
@@ -51,7 +50,6 @@ namespace InventoryManagementSystem
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.progressBar1);
-            this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.ForeColor = System.Drawing.Color.DodgerBlue;
@@ -82,15 +80,6 @@ namespace InventoryManagementSystem
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(203, 12);
             this.progressBar1.TabIndex = 2;
-        
-            // 
-            // label1
-            // 
-            this.label1.Location = new System.Drawing.Point(0, 0);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(133, 28);
-            this.label1.TabIndex = 0;
             // 
             // pictureBox1
             // 
@@ -143,7 +132,6 @@ namespace InventoryManagementSystem
         #endregion
 
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label label2;

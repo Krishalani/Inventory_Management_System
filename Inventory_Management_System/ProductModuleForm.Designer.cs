@@ -66,7 +66,7 @@ namespace InventoryManagementSystem
             // pictureBoxClose
             // 
             this.pictureBoxClose.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxClose.Image")));
-            this.pictureBoxClose.Location = new System.Drawing.Point(575, -1);
+            this.pictureBoxClose.Location = new System.Drawing.Point(618, 10);
             this.pictureBoxClose.Name = "pictureBoxClose";
             this.pictureBoxClose.Size = new System.Drawing.Size(29, 27);
             this.pictureBoxClose.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;

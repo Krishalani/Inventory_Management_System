@@ -31,7 +31,6 @@ namespace InventoryManagementSystem
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CustomerModuleForm));
             this.panel1 = new System.Windows.Forms.Panel();
-            this.pictureBoxClose = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnClear = new System.Windows.Forms.Button();
             this.btnUpdate = new System.Windows.Forms.Button();
@@ -44,7 +43,6 @@ namespace InventoryManagementSystem
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxClose)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -52,7 +50,6 @@ namespace InventoryManagementSystem
             // 
             this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.panel1.Controls.Add(this.pictureBox1);
-            this.panel1.Controls.Add(this.pictureBoxClose);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
@@ -60,17 +57,6 @@ namespace InventoryManagementSystem
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(765, 49);
             this.panel1.TabIndex = 14;
-            // 
-            // pictureBoxClose
-            // 
-            this.pictureBoxClose.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxClose.Image")));
-            this.pictureBoxClose.Location = new System.Drawing.Point(1104, 10);
-            this.pictureBoxClose.Name = "pictureBoxClose";
-            this.pictureBoxClose.Size = new System.Drawing.Size(29, 27);
-            this.pictureBoxClose.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxClose.TabIndex = 11;
-            this.pictureBoxClose.TabStop = false;
-            this.pictureBoxClose.Click += new System.EventHandler(this.pictureBoxClose_Click);
             // 
             // label1
             // 
@@ -178,12 +164,13 @@ namespace InventoryManagementSystem
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(692, 14);
+            this.pictureBox1.Location = new System.Drawing.Point(724, 10);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(29, 27);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 12;
+            this.pictureBox1.TabIndex = 15;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click_1);
             // 
             // CustomerModuleForm
             // 
@@ -208,7 +195,6 @@ namespace InventoryManagementSystem
             this.Text = "CustomerModuleForm";
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxClose)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -218,7 +204,6 @@ namespace InventoryManagementSystem
         #endregion
 
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.PictureBox pictureBoxClose;
         private System.Windows.Forms.Label label1;
         public System.Windows.Forms.Button btnClear;
         public System.Windows.Forms.Button btnUpdate;

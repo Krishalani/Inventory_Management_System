@@ -55,12 +55,11 @@ namespace InventoryManagementSystem
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(825, 49);
             this.panel1.TabIndex = 27;
-    
             // 
             // pictureBoxClose
             // 
             this.pictureBoxClose.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxClose.Image")));
-            this.pictureBoxClose.Location = new System.Drawing.Point(771, 10);
+            this.pictureBoxClose.Location = new System.Drawing.Point(793, 10);
             this.pictureBoxClose.Name = "pictureBoxClose";
             this.pictureBoxClose.Size = new System.Drawing.Size(29, 27);
             this.pictureBoxClose.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
