@@ -7,14 +7,13 @@ namespace InventoryManagementSystem
 {
     public partial class UserModuleForm : Form
     {
-        // Database connection
         SqlConnection con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;Initial Catalog=StockSpot;Integrated Security=True;Connect Timeout=30");
         SqlCommand cm = new SqlCommand();
 
         public UserModuleForm()
         {
             InitializeComponent();
-            btnUpdate.Enabled = false; // Disable update button by default
+            btnUpdate.Enabled = false;
         }
 
         private void pictureBoxClose_Click(object sender, EventArgs e)
@@ -24,6 +23,14 @@ namespace InventoryManagementSystem
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            // SUPER ADMIN VERIFICATION - Only SuperAdmin can add users
+            if (LoginForm.CurrentUserRole != "SuperAdmin")
+            {
+                MessageBox.Show("Only Super Administrator can create new users!", "Access Denied",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             try
             {
                 if (txtPass.Text != txtRepass.Text)
@@ -33,19 +40,30 @@ namespace InventoryManagementSystem
                 }
 
                 // Validate required fields
-                if (string.IsNullOrEmpty(txtUserName.Text) || string.IsNullOrEmpty(txtFullName.Text) || string.IsNullOrEmpty(txtPass.Text))
+                if (string.IsNullOrEmpty(txtUserName.Text) || string.IsNullOrEmpty(txtFullName.Text) ||
+                    string.IsNullOrEmpty(txtPass.Text) || string.IsNullOrEmpty(txtPhone.Text))
                 {
                     MessageBox.Show("Please fill in all required fields!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                if (MessageBox.Show("Are you sure you want to save this user?", "Saving Record", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                // Check if username already exists
+                if (IsUsernameExists(txtUserName.Text))
                 {
-                    cm = new SqlCommand("INSERT INTO tbUser(username, fullname, password, phone) VALUES(@username, @fullname, @password, @phone)", con);
+                    MessageBox.Show("Username already exists! Please choose a different username.",
+                        "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (MessageBox.Show("Are you sure you want to save this user?", "Saving Record",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    cm = new SqlCommand("INSERT INTO tbUser(username, fullname, password, phone, role) VALUES(@username, @fullname, @password, @phone, @role)", con);
                     cm.Parameters.AddWithValue("@username", txtUserName.Text);
                     cm.Parameters.AddWithValue("@fullname", txtFullName.Text);
                     cm.Parameters.AddWithValue("@password", txtPass.Text);
-                    cm.Parameters.AddWithValue("@phone", txtPhone.Text); // Added phone parameter
+                    cm.Parameters.AddWithValue("@phone", txtPhone.Text);
+                    cm.Parameters.AddWithValue("@role", "User"); // All new users get 'User' role
 
                     con.Open();
                     cm.ExecuteNonQuery();
@@ -57,12 +75,20 @@ namespace InventoryManagementSystem
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("Error saving user: " + ex.Message);
             }
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
+            // Only SuperAdmin can update users
+            if (LoginForm.CurrentUserRole != "SuperAdmin")
+            {
+                MessageBox.Show("Only Super Administrator can update users!", "Access Denied",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             try
             {
                 if (txtPass.Text != txtRepass.Text)
@@ -71,12 +97,13 @@ namespace InventoryManagementSystem
                     return;
                 }
 
-                if (MessageBox.Show("Are you sure you want to update this user?", "Update Record", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show("Are you sure you want to update this user?", "Update Record",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     cm = new SqlCommand("UPDATE tbUser SET fullname=@fullname, password=@password, phone=@phone WHERE username=@username", con);
                     cm.Parameters.AddWithValue("@fullname", txtFullName.Text);
                     cm.Parameters.AddWithValue("@password", txtPass.Text);
-                    cm.Parameters.AddWithValue("@phone", txtPhone.Text); // Added phone parameter
+                    cm.Parameters.AddWithValue("@phone", txtPhone.Text);
                     cm.Parameters.AddWithValue("@username", txtUserName.Text);
 
                     con.Open();
@@ -89,7 +116,7 @@ namespace InventoryManagementSystem
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("Error updating user: " + ex.Message);
             }
         }
 
@@ -98,21 +125,20 @@ namespace InventoryManagementSystem
             Clear();
             btnSave.Enabled = true;
             btnUpdate.Enabled = false;
-            txtUserName.Enabled = true; // Enable username field for new entries
+            txtUserName.Enabled = true;
             txtUserName.Focus();
         }
 
-        // Clears all input fields
         public void Clear()
         {
             txtUserName.Clear();
             txtFullName.Clear();
             txtPass.Clear();
             txtRepass.Clear();
-            txtPhone.Clear(); // Clear phone field
+            txtPhone.Clear();
         }
 
-        // Method to load user data for editing (call this when you want to update a user)
+        // Method to load user data for editing
         public void LoadUserData(string username, string fullname, string password, string phone)
         {
             txtUserName.Text = username;
@@ -121,10 +147,34 @@ namespace InventoryManagementSystem
             txtRepass.Text = password;
             txtPhone.Text = phone;
 
-            // Disable username field during update (username is the key)
+            // Disable username field during update
             txtUserName.Enabled = false;
             btnSave.Enabled = false;
             btnUpdate.Enabled = true;
+        }
+
+        // Check if username already exists
+        private bool IsUsernameExists(string username)
+        {
+            try
+            {
+                using (SqlCommand checkCmd = new SqlCommand("SELECT COUNT(*) FROM tbUser WHERE username = @username", con))
+                {
+                    checkCmd.Parameters.AddWithValue("@username", username);
+                    if (con.State == ConnectionState.Closed) con.Open();
+                    int count = (int)checkCmd.ExecuteScalar();
+                    return count > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error checking username: " + ex.Message);
+                return true;
+            }
+            finally
+            {
+                if (con.State == ConnectionState.Open) con.Close();
+            }
         }
     }
 }

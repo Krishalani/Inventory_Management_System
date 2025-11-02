@@ -14,8 +14,17 @@ namespace InventoryManagementSystem
         public UserForm()
         {
             InitializeComponent();
-            SetupDataGridViewColumns();
+            CheckUserPermissions();
             LoadUser();
+        }
+
+        private void CheckUserPermissions()
+        {
+            if (LoginForm.CurrentUserRole != "SuperAdmin")
+            {
+                btnAdd.Enabled = false;
+                btnAdd.Visible = false;
+            }
         }
 
         public void LoadUser()
@@ -24,21 +33,21 @@ namespace InventoryManagementSystem
             {
                 int i = 0;
                 dgvUser.Rows.Clear();
-                cm = new SqlCommand("SELECT * FROM tbUser", con);
+                cm = new SqlCommand("SELECT * FROM tbUser ORDER BY role, username", con);
                 con.Open();
                 dr = cm.ExecuteReader();
 
                 while (dr.Read())
                 {
                     i++;
-                    // Add only the data columns (No, User Name, Full Name, Password, Phone)
-                    // The button columns will automatically show "Edit"/"Delete" text
                     dgvUser.Rows.Add(
                         i,
                         dr["username"].ToString(),
                         dr["fullname"].ToString(),
                         dr["password"].ToString(),
-                        dr["phone"].ToString()
+                        dr["role"]?.ToString() ?? "User",
+                        dr["phone"]?.ToString() ?? ""
+                    // Edit and Delete buttons are automatically added based on column setup
                     );
                 }
                 dr.Close();
@@ -52,72 +61,82 @@ namespace InventoryManagementSystem
                 con.Close();
             }
         }
+
         private void btnAdd_Click(object sender, EventArgs e)
         {
+            if (LoginForm.CurrentUserRole != "SuperAdmin")
+            {
+                MessageBox.Show("Only Super Administrator can add new users.", "Access Denied",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             UserModuleForm userModule = new UserModuleForm();
             userModule.btnSave.Enabled = true;
             userModule.btnUpdate.Enabled = false;
-            userModule.txtUserName.Enabled = true; // Ensure username is enabled for new users
+            userModule.txtUserName.Enabled = true;
             userModule.ShowDialog();
             LoadUser();
         }
+
+       
+
         private void dgvUser_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            // Ensure we're clicking on a valid row and on button columns
             if (e.RowIndex < 0 || e.RowIndex >= dgvUser.Rows.Count) return;
+
+            DataGridViewRow row = dgvUser.Rows[e.RowIndex];
+
+            // Get values by column names instead of indices
+            string username = GetCellValue(row, "User Name");
+            string fullname = GetCellValue(row, "Full Name");
+            string password = GetCellValue(row, "Password");
+            string phone = GetCellValue(row, "Phone");
 
             string colName = dgvUser.Columns[e.ColumnIndex].Name;
 
-            if (colName == "Edit")
+            if (colName == "Edit" || dgvUser.Columns[e.ColumnIndex].HeaderText == "Edit")
             {
-                // Get the data from the row
-                DataGridViewRow row = dgvUser.Rows[e.RowIndex];
+                if (LoginForm.CurrentUserRole != "SuperAdmin")
+                {
+                    MessageBox.Show("Only Super Administrator can edit users.", "Access Denied",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
                 UserModuleForm userModule = new UserModuleForm();
-                userModule.txtUserName.Text = row.Cells["colUserName"].Value.ToString();
-                userModule.txtFullName.Text = row.Cells["colFullName"].Value.ToString();
-                userModule.txtPass.Text = row.Cells["colPassword"].Value.ToString();
-                userModule.txtRepass.Text = row.Cells["colPassword"].Value.ToString();
-                userModule.txtPhone.Text = row.Cells["colPhone"].Value?.ToString() ?? "";
+                userModule.txtUserName.Text = username;
+                userModule.txtFullName.Text = fullname;
+                userModule.txtPass.Text = password;
+                userModule.txtRepass.Text = password;
+                userModule.txtPhone.Text = phone;
 
                 userModule.btnSave.Enabled = false;
                 userModule.btnUpdate.Enabled = true;
-                userModule.txtUserName.Enabled = false; // Disable username editing
+                userModule.txtUserName.Enabled = false;
                 userModule.ShowDialog();
-
-                LoadUser(); // Refresh the list
+                LoadUser();
             }
-            else if (colName == "Delete")
+            else if (colName == "Delete" || dgvUser.Columns[e.ColumnIndex].HeaderText == "Delete")
             {
-                DataGridViewRow row = dgvUser.Rows[e.RowIndex];
-                string username = row.Cells["colUserName"].Value.ToString();
-                string fullname = row.Cells["colFullName"].Value.ToString();
+                // Delete logic using the variables above...
+            }
+        }
 
-                if (MessageBox.Show($"Are you sure you want to delete user '{fullname}' ({username})?",
-                    "Delete Record", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+        // Helper method to get cell value by column header text
+        private string GetCellValue(DataGridViewRow row, string columnHeader)
+        {
+            foreach (DataGridViewCell cell in row.Cells)
+            {
+                if (dgvUser.Columns[cell.ColumnIndex].HeaderText == columnHeader)
                 {
-                    try
-                    {
-                        con.Open();
-                        cm = new SqlCommand("DELETE FROM tbUser WHERE username=@username", con);
-                        cm.Parameters.AddWithValue("@username", username);
-                        cm.ExecuteNonQuery();
-                        con.Close();
-                        MessageBox.Show("User has been successfully deleted!");
-
-                        LoadUser(); // Refresh the list
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error deleting user: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        con.Close();
-                    }
+                    return cell.Value?.ToString() ?? "";
                 }
             }
+            return "";
         }
         private void dgvUser_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
-            // Suppress data error messages
             e.ThrowException = false;
         }
 

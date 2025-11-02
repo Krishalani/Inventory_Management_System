@@ -238,6 +238,7 @@ namespace InventoryManagementSystem
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
+          
             // 
             // MainForm
             // 
@@ -253,6 +254,7 @@ namespace InventoryManagementSystem
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "MainForm";
+           // this.Load += new System.EventHandler(this.MainForm_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.btnOrder)).EndInit();

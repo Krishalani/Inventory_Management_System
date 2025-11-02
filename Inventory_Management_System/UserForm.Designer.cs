@@ -43,6 +43,7 @@ namespace InventoryManagementSystem
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Role = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Edit = new System.Windows.Forms.DataGridViewImageColumn();
             this.Delete = new System.Windows.Forms.DataGridViewImageColumn();
@@ -107,6 +108,7 @@ namespace InventoryManagementSystem
             this.Column1,
             this.Column2,
             this.Column3,
+            this.Role,
             this.Column4,
             this.Edit,
             this.Delete});
@@ -168,6 +170,13 @@ namespace InventoryManagementSystem
             this.Column3.MinimumWidth = 6;
             this.Column3.Name = "Column3";
             this.Column3.Width = 106;
+            // 
+            // Role
+            // 
+            this.Role.HeaderText = "Role";
+            this.Role.MinimumWidth = 6;
+            this.Role.Name = "Role";
+            this.Role.Width = 125;
             // 
             // Column4
             // 
@@ -258,6 +267,7 @@ namespace InventoryManagementSystem
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;
         private DataGridViewTextBoxColumn Column3;
+        private DataGridViewTextBoxColumn Role;
         private DataGridViewTextBoxColumn Column4;
         private DataGridViewImageColumn Edit;
         private DataGridViewImageColumn Delete;
