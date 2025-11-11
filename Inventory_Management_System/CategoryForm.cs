@@ -73,5 +73,11 @@ namespace InventoryManagementSystem
             }
             LoadCategory();
         }
+
+        private void pictureBoxClose_Click(object sender, EventArgs e)
+        {
+            this.Dispose();
+        }
+        
     }
 }

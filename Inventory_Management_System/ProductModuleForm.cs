@@ -129,15 +129,18 @@ namespace InventoryManagementSystem
             {
                 if (MessageBox.Show("Are you sure you want to update this product?", "Update Record", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    cm = new SqlCommand("UPDATE tbProduct SET pname = @pname, pqty=@pqty, pprice=@pprice, pdescription=@pdescription, pcategory=@pcategory WHERE pid LIKE '" + lblPid.Text + "' ", con);
+                    cm = new SqlCommand("UPDATE tbProduct SET pname=@pname, pqty=@pqty, pprice=@pprice, pdescription=@pdescription, pcategory=@pcategory WHERE pid=@pid", con);
                     cm.Parameters.AddWithValue("@pname", txtPName.Text);
-                    cm.Parameters.AddWithValue("@pqty", Convert.ToInt16(txtPQty.Text));
-                    cm.Parameters.AddWithValue("@pprice", Convert.ToInt16(txtPPrice.Text));
+                    cm.Parameters.AddWithValue("@pqty", int.Parse(txtPQty.Text));
+                    cm.Parameters.AddWithValue("@pprice", double.Parse(txtPPrice.Text));
                     cm.Parameters.AddWithValue("@pdescription", txtPDes.Text);
                     cm.Parameters.AddWithValue("@pcategory", comboCat.Text);
+                    cm.Parameters.AddWithValue("@pid", int.Parse(lblPid.Text));
+
                     con.Open();
                     cm.ExecuteNonQuery();
                     con.Close();
+
                     MessageBox.Show("Product has been successfully updated!");
                     this.Dispose();
                 }
@@ -147,5 +150,6 @@ namespace InventoryManagementSystem
                 MessageBox.Show(ex.Message);
             }
         }
+
     }
 }

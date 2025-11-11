@@ -134,6 +134,7 @@
     </Compile>
     <EmbeddedResource Include="CategoryForm.resx">
       <DependentUpon>CategoryForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="CategoryModuleForm.resx">
       <DependentUpon>CategoryModuleForm.cs</DependentUpon>
@@ -176,6 +177,7 @@
     </Compile>
     <EmbeddedResource Include="UserForm.resx">
       <DependentUpon>UserForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="UserModuleForm.resx">
       <DependentUpon>UserModuleForm.cs</DependentUpon>

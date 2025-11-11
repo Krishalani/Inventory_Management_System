@@ -1,4 +1,6 @@
 ﻿
+using System.Windows.Forms;
+
 namespace InventoryManagementSystem
 {
     partial class UserForm
@@ -36,16 +38,19 @@ namespace InventoryManagementSystem
             this.btnAdd = new InventoryManagementSystem.CustomerButton();
             this.label1 = new System.Windows.Forms.Label();
             this.dgvUser = new System.Windows.Forms.DataGridView();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Role = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Edit = new System.Windows.Forms.DataGridViewImageColumn();
             this.Delete = new System.Windows.Forms.DataGridViewImageColumn();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.btnAdd)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUser)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -103,6 +108,7 @@ namespace InventoryManagementSystem
             this.Column1,
             this.Column2,
             this.Column3,
+            this.Role,
             this.Column4,
             this.Edit,
             this.Delete});
@@ -122,6 +128,17 @@ namespace InventoryManagementSystem
             this.dgvUser.Size = new System.Drawing.Size(992, 456);
             this.dgvUser.TabIndex = 1;
             this.dgvUser.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvUser_CellContentClick);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(29, 27);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 14;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // Column5
             // 
@@ -154,6 +171,13 @@ namespace InventoryManagementSystem
             this.Column3.Name = "Column3";
             this.Column3.Width = 106;
             // 
+            // Role
+            // 
+            this.Role.HeaderText = "Role";
+            this.Role.MinimumWidth = 6;
+            this.Role.Name = "Role";
+            this.Role.Width = 125;
+            // 
             // Column4
             // 
             this.Column4.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -165,26 +189,27 @@ namespace InventoryManagementSystem
             // Edit
             // 
             this.Edit.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.Edit.HeaderText = "";
+            this.Edit.HeaderText = "Edit";
             this.Edit.Image = ((System.Drawing.Image)(resources.GetObject("Edit.Image")));
             this.Edit.MinimumWidth = 6;
             this.Edit.Name = "Edit";
-            this.Edit.Width = 6;
+            this.Edit.Width = 39;
             // 
             // Delete
             // 
             this.Delete.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.Delete.HeaderText = "";
+            this.Delete.HeaderText = "Delete";
             this.Delete.Image = ((System.Drawing.Image)(resources.GetObject("Delete.Image")));
             this.Delete.MinimumWidth = 6;
             this.Delete.Name = "Delete";
-            this.Delete.Width = 6;
+            this.Delete.Width = 62;
             // 
             // UserForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(992, 506);
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.dgvUser);
             this.Controls.Add(this.panel1);
             this.Font = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -196,8 +221,39 @@ namespace InventoryManagementSystem
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.btnAdd)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUser)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
+        }
+       
+
+        private void SetupDataGridViewColumns()
+        {
+            // Clear existing columns
+            dgvUser.Columns.Clear();
+
+            // Add text columns
+            dgvUser.Columns.Add("colNo", "No");
+            dgvUser.Columns.Add("colUserName", "User Name");
+            dgvUser.Columns.Add("colFullName", "Full Name");
+            dgvUser.Columns.Add("colPassword", "Password");
+            dgvUser.Columns.Add("colPhone", "Phone");
+
+            // Add Edit button column
+            DataGridViewButtonColumn btnEdit = new DataGridViewButtonColumn();
+            btnEdit.Name = "Edit";
+            btnEdit.HeaderText = "Edit";
+            btnEdit.Text = "Edit";
+            btnEdit.UseColumnTextForButtonValue = true;
+            dgvUser.Columns.Add(btnEdit);
+
+            // Add Delete button column
+            DataGridViewButtonColumn btnDelete = new DataGridViewButtonColumn();
+            btnDelete.Name = "Delete";
+            btnDelete.HeaderText = "Delete";
+            btnDelete.Text = "Delete";
+            btnDelete.UseColumnTextForButtonValue = true;
+            dgvUser.Columns.Add(btnDelete);
         }
 
         #endregion
@@ -205,13 +261,15 @@ namespace InventoryManagementSystem
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.DataGridView dgvUser;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
-        private System.Windows.Forms.DataGridViewImageColumn Edit;
-        private System.Windows.Forms.DataGridViewImageColumn Delete;
         private CustomerButton btnAdd;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private DataGridViewTextBoxColumn Column5;
+        private DataGridViewTextBoxColumn Column1;
+        private DataGridViewTextBoxColumn Column2;
+        private DataGridViewTextBoxColumn Column3;
+        private DataGridViewTextBoxColumn Role;
+        private DataGridViewTextBoxColumn Column4;
+        private DataGridViewImageColumn Edit;
+        private DataGridViewImageColumn Delete;
     }
 }
